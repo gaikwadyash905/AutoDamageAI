@@ -1,6 +1,6 @@
 # AutoDamageAI
 
-> An AI-powered computer vision system for automated vehicle damage detection and assessment
+An AI-powered computer vision system for automated vehicle damage detection and assessment
 
 ## Features
 
