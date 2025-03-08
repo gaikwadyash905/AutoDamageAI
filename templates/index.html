@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}AutoDamageAI - Home{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h2 class="card-title mb-0">AutoDamageAI</h2>
+            </div>
+            <div class="card-body">
+                <p class="lead">
+                    Upload a front-side image of a car to detect and assess damages automatically using AI.
+                </p>
+                
+                <div class="alert alert-info">
+                    <h5>How it works:</h5>
+                    <ol>
+                        <li>Upload a clear image of a car with visible damage</li>
+                        <li>Our AI system will analyze the image using advanced computer vision</li>
+                        <li>View detailed damage detection results and assessment</li>
+                    </ol>
+                </div>
+                
+                <form id="upload-form" action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data" class="mt-4">
+                    <div class="mb-3">
+                        <div class="upload-zone mb-3">
+                            <input class="d-none" type="file" id="file" name="file" accept=".jpg,.jpeg,.png" required>
+                            <div class="text-center">
+                                <i class="bi bi-cloud-arrow-up fs-1 text-primary mb-2"></i>
+                                <h5>Drag & drop your image here</h5>
+                                <p class="text-muted mb-0">or click to browse files</p>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <span id="file-name" class="text-muted small"></span>
+                        </div>
+                        
+                        <div id="file-preview" class="d-none text-center mt-4">
+                            <!-- Image preview will be inserted here -->
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-search"></i> Analyze Damage
+                        </button>
+                    </div>
+                    
+                    <div class="text-center mt-2">
+                        <small class="text-muted">Supported formats: JPG, JPEG, PNG (max 16MB)</small>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h4>About this tool</h4>
+            </div>
+            <div class="card-body">
+                <p>This car damage detection tool uses YOLOv8, a state-of-the-art deep learning model, 
+                   to identify and classify various types of vehicle damage, including:</p>
+                <ul>
+                    <li>Scratches</li>
+                    <li>Dents</li>
+                    <li>Broken glass/windows</li>
+                    <li>Broken lights</li>
+                    <li>Major structural damage</li>
+                </ul>
+                <p>The system provides an assessment of damage severity and can help with insurance claims processing by providing objective damage analysis.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block head %}
+    <!-- Add Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Client-side validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const fileInput = document.getElementById('file');
+        if (fileInput.files.length === 0) {
+            e.preventDefault();
+            alert('Please select a file to upload');
+            return false;
+        }
+        
+        const file = fileInput.files[0];
+        if (file.size > 16 * 1024 * 1024) { // 16MB in bytes
+            e.preventDefault();
+            alert('File size exceeds the maximum limit of 16MB');
+            return false;
+        }
+        
+        // Show loading indicator
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+        submitBtn.disabled = true;
+    });
+
+    // Drag-and-drop functionality
+    const uploadZone = document.querySelector('.upload-zone');
+    const fileInput = document.getElementById('file');
+    const fileName = document.getElementById('file-name');
+    const filePreview = document.getElementById('file-preview');
+
+    uploadZone.addEventListener('click', () => fileInput.click());
+
+    uploadZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadZone.classList.add('dragover');
+    });
+
+    uploadZone.addEventListener('dragleave', () => {
+        uploadZone.classList.remove('dragover');
+    });
+
+    uploadZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadZone.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            handleFileSelect(files[0]);
+        }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        if (fileInput.files.length > 0) {
+            handleFileSelect(fileInput.files[0]);
+        }
+    });
+
+    function handleFileSelect(file) {
+        fileName.textContent = file.name;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            filePreview.innerHTML = `<img src="${e.target.result}" class="img-fluid" alt="Image preview">`;
+            filePreview.classList.remove('d-none');
+        };
+        reader.readAsDataURL(file);
+    }
+</script>
+{% endblock %}
